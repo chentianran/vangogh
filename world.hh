@@ -53,10 +53,15 @@ public:
 class Chain : public list<Node*>
 {
 public:
+
+    static float max_link;
+    static float min_link;
+
+public:
     
     float coef;             // Hooke's coefficient
 
-    Chain() : coef(0.9f) { };
+    Chain() : coef(30.0) { };
 
     Node* add (float x, float y);
     void apply_tension();
@@ -66,7 +71,7 @@ class World
 {
 private: 
 
-    World() : friction_threshold(1.0), friction_coef (4.0), coulomb_const(1e4f) {}
+    World() : friction_threshold(1.0), friction_coef (4.0), coulomb_const(1e3f) {}
     ~World() {} 
     World(const World&);                // intentionally undefined
     World& operator=(const World&);     // intentionally undefined

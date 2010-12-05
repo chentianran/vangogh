@@ -53,7 +53,7 @@ bool MyApp::OnInit()
     frame->SetAutoLayout(true);
     frame->Show();
 
-    Start (30);
+    Start (20);
 
     return true;
 } 

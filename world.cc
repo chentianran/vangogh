@@ -39,6 +39,9 @@ void Node::evolve (float dt)
     velocity.y /= 1.05;
 }
 
+float Chain::max_link = 100.0;
+float Chain::min_link = 20.0;
+
 Node* Chain::add (float x, float y)
 {
     Node* n = World::instance().create_node (x, y);
@@ -53,9 +56,16 @@ void Chain::apply_tension()
     if (n1 != end()) {
         for (++n2; n2 != end(); ++n1, ++n2) {
             Vect f = (**n1) - (**n2);               // direction of the force
-            (**n1).force.move (f, -coef);           // apply force on the first node
-            (**n2).force.move (f,  coef);           // apply force on the second node
-
+            if (f.norm() > max_link) {              // if the two nodes are too far apart
+                float x3 = ((**n1).x+(**n2).x)/2.0;
+                float y3 = ((**n1).y+(**n2).y)/2.0;
+                Node* n3 = World::instance().create_node (x3, y3);
+                insert (n2, n3);
+                ++n1;
+            } else {
+                (**n1).force.move (f, -coef);           // apply force on the first node
+                (**n2).force.move (f,  coef);           // apply force on the second node
+            }
         }
     }
 }

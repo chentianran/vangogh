@@ -5,17 +5,20 @@
 #include <canvas.hh>
 #include <world.hh>
 
-void Canvas::mouseMoved(wxMouseEvent& event) {}
+void Canvas::mouseMoved(wxMouseEvent& event)
+{
+    if (event.Dragging()) {
+        Node* n = World::instance().nodes().front();
+        n->x = event.GetX();
+        n->y = event.GetY();
+    }
+}
+
 void Canvas::mouseDown(wxMouseEvent& event)
 {
-    //if (world) {
-        //Node* node = world->create_node (event.GetX(), event.GetY());
-        //node->velocity.x = ((float)getHeight()) / ((float)event.GetY()) * 4.0;
-        //Refresh();
-    //}
-    Node* n = World::instance().nodes().front();
-    n->x = event.GetX();
-    n->y = event.GetY();
+    //Node* n = World::instance().nodes().front();
+    //n->x = event.GetX();
+    //n->y = event.GetY();
 }
 
 void Canvas::mouseWheelMoved(wxMouseEvent& event) {}
