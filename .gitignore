@@ -1,0 +1,13 @@
+configure
+config.log
+config.status
+config.h
+Makefile.in
+Makefile
+decomp
+stamp-h1
+vangogh
+.deps/*
+*.o
+*.swp
+
