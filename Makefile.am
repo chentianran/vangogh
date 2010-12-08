@@ -1,6 +1,7 @@
 bin_PROGRAMS=vangogh
 
-vangogh_SOURCES = main.cc \
+vangogh_SOURCES = world.hh world.cc \
 		  canvas.hh canvas.cc \
-		  world.hh world.cc
+		  panel.hh panel.cc \
+		  main.cc
 

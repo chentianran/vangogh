@@ -4,8 +4,9 @@
 #include <wx/sizer.h>
 #include <wx/timer.h>
 
-#include <canvas.hh>
 #include <world.hh>
+#include <panel.hh>
+#include <canvas.hh>
  
 class MyApp: public wxApp, public wxTimer
 {
@@ -29,25 +30,31 @@ IMPLEMENT_APP(MyApp)
  
 bool MyApp::OnInit()
 {
+    Node* a1 = World::instance().create_anchor (200, 200);
+    Node* a2 = World::instance().create_anchor (400, 200);
+    Node* a3 = World::instance().create_anchor (100, 300);
+    Node* a4 = World::instance().create_anchor (300, 300);
+
     Chain* c1 = World::instance().create_chain();
-    c1->add (100,100);
-    c1->add (400,400);
-    c1->add (600,100);
+    c1->add (a1);
+    c1->add (a2);
 
     Chain* c2 = World::instance().create_chain();
-    c2->add (100,500);
-    c2->add (400,500);
-    c2->add (600,500);
+    c2->add (a3);
+    c2->add (a4);
 
     wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
     frame = new wxFrame((wxFrame *)NULL, -1,  wxT("Hello GL World"), wxPoint(50,50), wxSize(800,800));
 	
     int args[] = {WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0};
     
+    //wxPanel* pane = new wxPanel (frame, -1, wxPoint(0,0), wxSize(200,800));
+    CtrlPanel* pane = new CtrlPanel (World::instance(), frame);
     canvas = new Canvas( (wxFrame*) frame, args);
     //canvas->world = world;
 
-    sizer->Add(canvas, 1, wxEXPAND);
+    sizer->Add (pane, 1);
+    sizer->Add (canvas, 3, wxEXPAND);
 	
     frame->SetSizer(sizer);
     frame->SetAutoLayout(true);

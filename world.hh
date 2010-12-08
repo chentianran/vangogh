@@ -35,43 +35,43 @@ struct Vect
 Vect operator - (const Vect& v1, const Vect& v2);
 Vect operator + (const Vect& v1, const Vect& v2);
 
+class World;
+
 class Node : public Vect
 {
 public:
 
+    bool removed;
     Vect velocity;
     Vect force;
     float mass;
     float charge;
 
-    Node (float x, float y, float m = 1.0f, float c = 1.0f) :
-        Vect(x,y), velocity(0.0f,0.0f), force(0.0f,0.0f), mass(m), charge(c) { }
+    Node (float x, float y, float m = 100.0f, float c = 1.0f) :
+        Vect(x,y), removed (false), velocity(0.0f,0.0f), force(0.0f,0.0f), mass(m), charge(c) { }
 
-    void evolve (float dt);
+    void evolve (float dt, const World& world);
 };
 
 class Chain : public list<Node*>
 {
 public:
 
-    static float max_link;
-    static float min_link;
+    //static float max_link;
+    //static float min_link;
 
 public:
     
-    float coef;             // Hooke's coefficient
-
-    Chain() : coef(30.0) { };
-
     Node* add (float x, float y);
-    void apply_tension();
+    void  add (Node* node) { push_back (node); }
+    void apply_tension (World& world);
 };
 
 class World
 {
 private: 
 
-    World() : friction_threshold(1.0), friction_coef (4.0), coulomb_const(1e3f) {}
+    World();
     ~World() {} 
     World(const World&);                // intentionally undefined
     World& operator=(const World&);     // intentionally undefined
@@ -84,23 +84,33 @@ public:
 protected:
 
     list<Node*>  _nodes;
+    list<Node*>  _anchors;
     list<Chain*> _chains;
 
 public:
 
+    float min_link;
+    float max_link;
+
+    float coulomb_const;        // Coulomb's constant
+    float tension_const;        // Hooke's constant for chains
+    float force_range;
+
     float max_x;
     float max_y;
 
-    float friction_threshold;
-    float friction_coef;
-    float coulomb_const;        // Coulomb's constant
-
     void evolve (float dt);
-    const list<Node*>&  nodes()  const { return _nodes; }
-    const list<Chain*>& chains() const { return _chains; }
+    const list<Node*>&  nodes()   const { return _nodes; }
+    const list<Node*>&  anchors() const { return _anchors; }
+    const list<Chain*>& chains()  const { return _chains; }
 
     Node* create_node (float x, float y);
+    Node* create_anchor (float x, float y);
+    Node* find_anchor (float x, float y, float range);
     Chain* create_chain();
+
+    void clip (Vect& v) const;
+    float force (float c1, float c2, float r) const;
 };
 
 #endif

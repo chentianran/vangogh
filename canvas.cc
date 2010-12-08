@@ -8,7 +8,10 @@
 void Canvas::mouseMoved(wxMouseEvent& event)
 {
     if (event.Dragging()) {
-        Node* n = World::instance().nodes().front();
+        Node* n = World::instance().anchors().front();
+        //Vect f (event.GetX(), event.GetY());
+        //f -= *n;
+        //n->force.move (f, 20.0);
         n->x = event.GetX();
         n->y = event.GetY();
     }
@@ -79,7 +82,7 @@ void Canvas::render (wxPaintEvent& evt)
     prepareViewport(0,0,getWidth(), getHeight());
     glLoadIdentity();
 	
-        glColor4f (0.9, 0.3, 0, 1);
+    glColor4f (0.9, 0.3, 0, 1);
     BOOST_FOREACH (Chain* chain, World::instance().chains()) {
         glBegin (GL_LINE_STRIP);
         BOOST_FOREACH (Node* node, *chain) {
@@ -88,6 +91,16 @@ void Canvas::render (wxPaintEvent& evt)
         glEnd();
     }
     
+    const float sz = 4;
+    BOOST_FOREACH (Node* a, World::instance().anchors()) {
+        glBegin (GL_QUADS);
+        glVertex3f (a->x-sz, a->y-sz, 0);
+        glVertex3f (a->x+sz, a->y-sz, 0);
+        glVertex3f (a->x+sz, a->y+sz, 0);
+        glVertex3f (a->x-sz, a->y+sz, 0);
+    }
+    glEnd();
+
     glFlush();
     SwapBuffers();
 }
