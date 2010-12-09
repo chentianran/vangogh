@@ -39,6 +39,8 @@ public:
     void keyPressed(wxKeyEvent& event);
     void keyReleased(wxKeyEvent& event);
 
+private:
+
     DECLARE_EVENT_TABLE()
 };
 #endif 

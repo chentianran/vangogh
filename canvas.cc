@@ -5,25 +5,8 @@
 #include <canvas.hh>
 #include <world.hh>
 
-void Canvas::mouseMoved(wxMouseEvent& event)
-{
-    if (event.Dragging()) {
-        Node* n = World::instance().anchors().front();
-        //Vect f (event.GetX(), event.GetY());
-        //f -= *n;
-        //n->force.move (f, 20.0);
-        n->x = event.GetX();
-        n->y = event.GetY();
-    }
-}
-
-void Canvas::mouseDown(wxMouseEvent& event)
-{
-    //Node* n = World::instance().nodes().front();
-    //n->x = event.GetX();
-    //n->y = event.GetY();
-}
-
+void Canvas::mouseMoved(wxMouseEvent& event) {}
+void Canvas::mouseDown(wxMouseEvent& event) {}
 void Canvas::mouseWheelMoved(wxMouseEvent& event) {}
 void Canvas::mouseReleased(wxMouseEvent& event) {}
 void Canvas::rightClick(wxMouseEvent& event) {}
@@ -104,3 +87,17 @@ void Canvas::render (wxPaintEvent& evt)
     glFlush();
     SwapBuffers();
 }
+
+BEGIN_EVENT_TABLE(Canvas, wxGLCanvas)
+EVT_MOTION(Canvas::mouseMoved)
+EVT_LEFT_DOWN(Canvas::mouseDown)
+EVT_LEFT_UP(Canvas::mouseReleased)
+EVT_RIGHT_DOWN(Canvas::rightClick)
+EVT_LEAVE_WINDOW(Canvas::mouseLeftWindow)
+EVT_SIZE(Canvas::resized)
+EVT_KEY_DOWN(Canvas::keyPressed)
+EVT_KEY_UP(Canvas::keyReleased)
+EVT_MOUSEWHEEL(Canvas::mouseWheelMoved)
+EVT_PAINT(Canvas::render)
+END_EVENT_TABLE()
+ 

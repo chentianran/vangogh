@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cassert>
 #include <boost/foreach.hpp>
 
 #include <world.hh>
@@ -7,6 +8,9 @@
 
 using std::max;
 using std::min;
+using std::sin;
+using std::cos;
+using std::atan2;
 
 Vect operator - (const Vect& v1, const Vect& v2)
 {
@@ -24,21 +28,13 @@ void Node::evolve (float dt, const World& world)
     bool moving = true;
 
     if (moving) {
-        //move (force, dt / (mass*3e1));
-        velocity.move (force, dt / mass);
-        move (velocity, dt);
+        move (force, 1e-1 / mass);
         world.clip (*this);
     }
 
     force.x = 0.0f;
     force.y = 0.0f;
-
-    velocity.x /= 1.09;
-    velocity.y /= 1.09;
 }
-
-//float Chain::max_link = 20.0;
-//float Chain::min_link = 8.0;
 
 Node* Chain::add (float x, float y)
 {
@@ -91,52 +87,34 @@ World::World()
     max_link = 20.0;
 
     float r = (min_link + max_link) / 2.0;
-    tension_const = 50.0f;
-    coulomb_const = 5e3;
-    force_range = 30;
+    tension_const = 168.0f;
+    coulomb_const = 2000.0f;
+    force_range = 30.0f;
+    step = 0.008;
+
+    _dir = 0.0;
+    _node1 = 0;
+    _node2 = 0;
 }
 
 void World::evolve (float dt)
 {
+    if (_dir != 0.0f) {
+        if (_node1 && _node2) {
+            _phase1 += _dir * step;
+            _phase2 += _dir * step;
+            float r1 = (*_node1 - _axis).norm();
+            float r2 = (*_node2 - _axis).norm();
+            _node1->x = cosf(_phase1)*r1 + _axis.x;
+            _node1->y = sinf(_phase1)*r1 + _axis.y;
+            _node2->x = cosf(_phase2)*r2 + _axis.x;
+            _node2->y = sinf(_phase2)*r2 + _axis.y;
+        }
+    }
+
     BOOST_FOREACH (Chain* chain, _chains) {
         chain->apply_tension (*this);
     }
-
-    float C = World::instance().coulomb_const;
-
-#if 0
-    BOOST_FOREACH (Chain* c, _chains) {
-        BOOST_FOREACH (Node* n, *c) {               // for each node on the chain
-            float nc = n->charge;
-            BOOST_FOREACH (Node* a, _anchors) {             // apply anchor-to-chain force
-                if (n != a) {
-                    Vect d = *n - *a;
-                    float r = d.norm();                 // distance
-                    float f = force (nc, a->charge, r);
-                    //if (r < 100.0) {
-                        //float f = nc * a->charge * C / (r*r);
-                        n->force.move (d,  f);
-                        a->force.move (d, -f);
-                    //}
-                }
-            }
-            BOOST_FOREACH (Chain* c2, _chains) {            // apply chain-to-chain force
-                if (c != c2) {
-                    BOOST_FOREACH (Node* n2, *c2) {
-                        Vect d = *n - *n2;
-                        float r = d.norm();         // distance
-                        float f = force (nc, n2->charge, r);
-                        //if (r < 100.0) {
-                        //    float f = nc * n2->charge * C / (r*r);
-                            n ->force.move (d,  f);
-                            n2->force.move (d, -f);
-                        //}
-                    }
-                }
-            }
-        }
-    }
-#endif
 
     BOOST_FOREACH (Node* n1, _nodes) {
         BOOST_FOREACH (Node* n2, _nodes) {
@@ -152,7 +130,7 @@ void World::evolve (float dt)
 
     float wall_charge = 10.0;
     BOOST_FOREACH (Node* n, _nodes) {
-        float q = n->charge * wall_charge * C;
+        float q = n->charge * wall_charge * coulomb_const;
         float l = max(0.5f,n->x);
         float r = max(0.5f,max_x - l);
         float t = max(0.5f,n->y);
@@ -173,6 +151,20 @@ void World::evolve (float dt)
             ++ni;
         }
     }
+}
+
+void World::rotate (Node* n1, Node* n2, float d)
+{
+    assert (n1 && n2);
+    assert (d == 1.0 || d == -1.0);
+
+    _node1 = n1;
+    _node2 = n2;
+    _dir   = d;
+    _axis.x = (n1->x + n2->x) / 2.0f;
+    _axis.y = (n1->y + n2->y) / 2.0f;
+    _phase1 = atan2f (n1->y - _axis.y, n1->x - _axis.x);
+    _phase2 = atan2f (n2->y - _axis.y, n2->x - _axis.x);
 }
 
 Node* World::create_node (float x, float y)

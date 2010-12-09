@@ -11,6 +11,7 @@ struct Vect
     float x;
     float y;
 
+    Vect () : x(0.0f), y(0.0f) { }
     Vect (float _x, float _y) : x(_x), y(_y) { }
 
     Vect& operator += (const Vect& v) { x += v.x; y += v.y; }
@@ -56,11 +57,6 @@ public:
 class Chain : public list<Node*>
 {
 public:
-
-    //static float max_link;
-    //static float min_link;
-
-public:
     
     Node* add (float x, float y);
     void  add (Node* node) { push_back (node); }
@@ -76,7 +72,6 @@ private:
     World(const World&);                // intentionally undefined
     World& operator=(const World&);     // intentionally undefined
  
- 
 public:
 
     static World& instance();
@@ -87,6 +82,13 @@ protected:
     list<Node*>  _anchors;
     list<Chain*> _chains;
 
+    Vect            _axis;
+    float           _dir;
+    float           _phase1;
+    float           _phase2;
+    Node*           _node1;
+    Node*           _node2;
+
 public:
 
     float min_link;
@@ -95,6 +97,7 @@ public:
     float coulomb_const;        // Coulomb's constant
     float tension_const;        // Hooke's constant for chains
     float force_range;
+    float step;
 
     float max_x;
     float max_y;
@@ -105,6 +108,7 @@ public:
     const list<Chain*>& chains()  const { return _chains; }
 
     Node* create_node (float x, float y);
+    void rotate (Node* n1, Node* n2, float d);
     Node* create_anchor (float x, float y);
     Node* find_anchor (float x, float y, float range);
     Chain* create_chain();

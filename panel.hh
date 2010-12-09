@@ -6,21 +6,29 @@
 
 class World;
 
-class CtrlPanel : public wxPanel
+class CtrlSlider : public wxSlider
 {
 protected:
 
-    wxSlider* s_tension;
-    wxSlider* s_repel;
+    float&  _val;
+    float   _min;
+    float   _max;
 
-    void on_scroll_tension (wxScrollEvent&);
+    void on_scroll (wxScrollEvent&);
 
+public:
+
+    CtrlSlider (float& v, float min, float max, wxWindow* parent);
+};
+
+    
+class CtrlPanel : public wxPanel
+{
 public:
 
     World& world;
 
     CtrlPanel (World& w, wxWindow* parent, wxWindowID id = -1, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize);
-    ~CtrlPanel();
 };
 
 #endif
