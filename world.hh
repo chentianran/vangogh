@@ -2,9 +2,13 @@
 #define _WORLD_HH_
 
 #include <list>
+#include <vector>
 #include <cmath>
 
+#include <wx/thread.h>
+
 using std::list;
+using std::vector;
 
 struct Vect
 {
@@ -43,15 +47,15 @@ class Node : public Vect
 public:
 
     bool removed;
-    Vect velocity;
+    bool selected;
     Vect force;
     float mass;
     float charge;
 
     Node (float x, float y, float m = 100.0f, float c = 1.0f) :
-        Vect(x,y), removed (false), velocity(0.0f,0.0f), force(0.0f,0.0f), mass(m), charge(c) { }
+        Vect(x,y), removed (false), selected (false), force(0.0f,0.0f), mass(m), charge(c) { }
 
-    void evolve (float dt, const World& world);
+    void evolve (const World& world);
 };
 
 class Chain : public list<Node*>
@@ -78,14 +82,15 @@ public:
 
 protected:
 
-    list<Node*>  _nodes;
-    list<Node*>  _anchors;
-    list<Chain*> _chains;
+    list<Node*>     _nodes;
+    vector<Node*>   _anchors;
+    list<Chain*>    _chains;
 
     Vect            _axis;
     float           _dir;
     float           _phase1;
     float           _phase2;
+    float           _phase;
     Node*           _node1;
     Node*           _node2;
 
@@ -102,15 +107,18 @@ public:
     float max_x;
     float max_y;
 
-    void evolve (float dt);
+    wxMutex lock;
+
+    bool evolve();
     const list<Node*>&  nodes()   const { return _nodes; }
-    const list<Node*>&  anchors() const { return _anchors; }
+    const vector<Node*>&  anchors() const { return _anchors; }
     const list<Chain*>& chains()  const { return _chains; }
 
     Node* create_node (float x, float y);
     void rotate (Node* n1, Node* n2, float d);
     Node* create_anchor (float x, float y);
     Node* find_anchor (float x, float y, float range);
+    Node* anchor (unsigned int i) const { return _anchors[i]; }
     Chain* create_chain();
 
     void clip (Vect& v) const;

@@ -23,7 +23,7 @@ Vect Vect::normalize() const
     return Vect (x/n, y/n);
 }
 
-void Node::evolve (float dt, const World& world)
+void Node::evolve (const World& world)
 {
     bool moving = true;
 
@@ -45,6 +45,8 @@ Node* Chain::add (float x, float y)
 
 void Chain::apply_tension (World& world)
 {
+    wxMutexLocker (world.lock);
+
     const float coef = world.tension_const;             // Hooke's tension constant
     iterator n1 = begin();                              // iterator for the 1st node
     iterator n2 = n1;                                   // iterator for the 2nd node
@@ -97,12 +99,18 @@ World::World()
     _node2 = 0;
 }
 
-void World::evolve (float dt)
+bool World::evolve()
 {
+    bool cont = true;
+
     if (_dir != 0.0f) {
         if (_node1 && _node2) {
             _phase1 += _dir * step;
             _phase2 += _dir * step;
+            if ((_phase  += step) > M_PI) {
+                cont = false;
+                _phase = 0.0f;
+            }
             float r1 = (*_node1 - _axis).norm();
             float r2 = (*_node2 - _axis).norm();
             _node1->x = cosf(_phase1)*r1 + _axis.x;
@@ -142,15 +150,19 @@ void World::evolve (float dt)
     list<Node*>::iterator ni = _nodes.begin();
     while (_nodes.end() != ni) {
         if ((**ni).removed) {
+            lock.Lock();
             list<Node*>::iterator old = ni;
             ++ni;
             delete *old;
             _nodes.erase (old);
+            lock.Unlock();
         } else {
-            (**ni).evolve (dt, *this);
+            (**ni).evolve (*this);
             ++ni;
         }
     }
+
+    return cont;
 }
 
 void World::rotate (Node* n1, Node* n2, float d)
@@ -165,6 +177,7 @@ void World::rotate (Node* n1, Node* n2, float d)
     _axis.y = (n1->y + n2->y) / 2.0f;
     _phase1 = atan2f (n1->y - _axis.y, n1->x - _axis.x);
     _phase2 = atan2f (n2->y - _axis.y, n2->x - _axis.x);
+    _phase  = 0.0f;
 }
 
 Node* World::create_node (float x, float y)
@@ -210,4 +223,14 @@ float World::force (float c1, float c2, float r) const
         return c1 * c2 * coulomb_const / (r*r);
     else
         return 0.0f;
+}
+
+Node* World::find_anchor (float x, float y, float range)
+{
+    Vect v (x, y);
+    BOOST_FOREACH (Node* a, _anchors)
+        if ((v - *a).norm() < range)
+            return a;
+
+    return 0;
 }

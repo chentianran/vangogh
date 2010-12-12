@@ -6,7 +6,13 @@
 #include <world.hh>
 
 void Canvas::mouseMoved(wxMouseEvent& event) {}
-void Canvas::mouseDown(wxMouseEvent& event) {}
+void Canvas::mouseDown(wxMouseEvent& event)
+{
+    Node* a = World::instance().find_anchor (event.GetX(), event.GetY(), 10.0f);
+    if (a)
+        a->selected = !a->selected;
+}
+
 void Canvas::mouseWheelMoved(wxMouseEvent& event) {}
 void Canvas::mouseReleased(wxMouseEvent& event) {}
 void Canvas::rightClick(wxMouseEvent& event) {}
@@ -81,8 +87,18 @@ void Canvas::render (wxPaintEvent& evt)
         glVertex3f (a->x+sz, a->y-sz, 0);
         glVertex3f (a->x+sz, a->y+sz, 0);
         glVertex3f (a->x-sz, a->y+sz, 0);
+        glEnd();
+
+        if (a->selected) {
+            const float sz2 = 8;
+            glBegin (GL_LINE_LOOP);
+            glVertex3f (a->x-sz2, a->y-sz2, 0);
+            glVertex3f (a->x+sz2, a->y-sz2, 0);
+            glVertex3f (a->x+sz2, a->y+sz2, 0);
+            glVertex3f (a->x-sz2, a->y+sz2, 0);
+            glEnd();
+        }
     }
-    glEnd();
 
     glFlush();
     SwapBuffers();
