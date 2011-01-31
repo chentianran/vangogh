@@ -21,7 +21,7 @@ void Canvas::keyPressed(wxKeyEvent& event) {}
 void Canvas::keyReleased(wxKeyEvent& event) {}
  
 Canvas::Canvas(wxFrame* parent, int* args) :
-    wxGLCanvas(parent, wxID_ANY,  0, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
+    wxGLCanvas(parent, wxID_ANY, args, wxDefaultPosition, wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
 {
     m_context = new wxGLContext(this);
 }
